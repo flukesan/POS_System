@@ -1,0 +1,58 @@
+-- ============================================================
+-- Seed Data for POS System
+-- ============================================================
+
+-- Default Admin User (password: admin1234)
+INSERT INTO users (id, username, email, hashed_password, full_name, role)
+VALUES (
+    uuid_generate_v4(),
+    'admin',
+    'admin@agripos.local',
+    crypt('admin1234', gen_salt('bf')),
+    'ผู้ดูแลระบบ',
+    'admin'
+);
+
+-- Default Warehouse
+INSERT INTO warehouses (id, code, name, address)
+VALUES (
+    uuid_generate_v4(),
+    'WH-001',
+    'คลังสินค้าหลัก',
+    'ร้านเกษตรภัณฑ์ - สาขาหลัก'
+);
+
+-- Categories
+INSERT INTO categories (id, name, name_en, sort_order) VALUES
+    (uuid_generate_v4(), 'ปุ๋ยเคมี', 'Chemical Fertilizer', 1),
+    (uuid_generate_v4(), 'ปุ๋ยอินทรีย์', 'Organic Fertilizer', 2),
+    (uuid_generate_v4(), 'ยาฆ่าแมลง', 'Insecticide', 3),
+    (uuid_generate_v4(), 'ยาฆ่าหญ้า', 'Herbicide', 4),
+    (uuid_generate_v4(), 'ยาฆ่าเชื้อรา', 'Fungicide', 5),
+    (uuid_generate_v4(), 'เมล็ดพันธุ์', 'Seeds', 6),
+    (uuid_generate_v4(), 'เครื่องมือเกษตร', 'Agricultural Tools', 7),
+    (uuid_generate_v4(), 'อุปกรณ์ชลประทาน', 'Irrigation Equipment', 8),
+    (uuid_generate_v4(), 'อุปกรณ์ป้องกัน', 'Protective Equipment', 9),
+    (uuid_generate_v4(), 'อื่นๆ', 'Others', 10);
+
+-- Bank Account (PromptPay)
+INSERT INTO bank_accounts (bank_name, account_name, account_number, promptpay_id, is_default)
+VALUES (
+    'ธนาคารกสิกรไทย',
+    'ร้านเกษตรภัณฑ์',
+    '123-4-56789-0',
+    '0812345678',
+    TRUE
+);
+
+-- System Settings
+INSERT INTO settings (key, value, description) VALUES
+    ('shop_name', 'ร้านเกษตรภัณฑ์', 'ชื่อร้านค้า'),
+    ('shop_address', '123 ถ.เกษตร ต.นา อ.เมือง จ.เชียงใหม่', 'ที่อยู่ร้านค้า'),
+    ('shop_phone', '053-123456', 'เบอร์โทรร้านค้า'),
+    ('shop_tax_id', '0105560012345', 'เลขผู้เสียภาษี'),
+    ('default_tax_rate', '7', 'ภาษีมูลค่าเพิ่มเริ่มต้น (%)'),
+    ('currency', 'THB', 'สกุลเงิน'),
+    ('receipt_footer', 'ขอบคุณที่ใช้บริการ', 'ข้อความท้ายใบเสร็จ'),
+    ('low_stock_alert', '10', 'แจ้งเตือนสต๊อกต่ำ'),
+    ('credit_default_days', '30', 'จำนวนวันเครดิตเริ่มต้น');
