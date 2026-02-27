@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # File Storage
-    UPLOAD_DIR: str = "/app/uploads"
+    UPLOAD_DIR: str = "./uploads"
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
     ALLOWED_IMAGE_TYPES: list = ["image/jpeg", "image/png", "image/webp"]
 
@@ -28,10 +28,11 @@ class Settings(BaseSettings):
     PAYMENT_WEBHOOK_URL: Optional[str] = None
 
     # CORS
-    CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:80"]
+    CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:5173", "http://localhost:80"]
 
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
         case_sensitive = True
 
 settings = Settings()
