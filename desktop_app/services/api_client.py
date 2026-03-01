@@ -28,11 +28,12 @@ class APIClient:
             raise APIError('กรุณาเข้าสู่ระบบใหม่', 401)
         if not resp.ok:
             try:
-                detail = resp.json().get('detail', resp.text)
+                body = resp.json()
+                detail = body.get('detail', resp.text)
                 msg = detail if isinstance(detail, str) else str(detail)
             except Exception:
                 msg = resp.text or f'HTTP {resp.status_code}'
-            raise APIError(msg, resp.status_code)
+            raise APIError(f'[HTTP {resp.status_code}] {msg}', resp.status_code)
         return resp.json()
 
     def login(self, username: str, password: str) -> Dict:

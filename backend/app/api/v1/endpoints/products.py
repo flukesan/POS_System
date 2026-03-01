@@ -25,6 +25,35 @@ from app.core.config import settings
 router = APIRouter(prefix="/products", tags=["Products"])
 
 
+def _product_dict(p: Product) -> dict:
+    """Serialize a Product SQLAlchemy model to a safe dict (no lazy-load)."""
+    return {
+        "id": str(p.id),
+        "code": p.code,
+        "barcode": p.barcode,
+        "name": p.name,
+        "name_en": p.name_en,
+        "category_id": str(p.category_id) if p.category_id else None,
+        "supplier_id": str(p.supplier_id) if p.supplier_id else None,
+        "unit": p.unit,
+        "unit_per_pack": float(p.unit_per_pack) if p.unit_per_pack is not None else 1,
+        "cost_price": float(p.cost_price) if p.cost_price is not None else 0,
+        "selling_price": float(p.selling_price) if p.selling_price is not None else 0,
+        "min_selling_price": float(p.min_selling_price) if p.min_selling_price is not None else None,
+        "tax_rate": float(p.tax_rate) if p.tax_rate is not None else 7.0,
+        "description": p.description,
+        "min_stock_level": p.min_stock_level,
+        "reorder_point": p.reorder_point,
+        "is_active": p.is_active,
+        "chemical_registration": p.chemical_registration,
+        "expiry_tracking": p.expiry_tracking,
+        "main_image_url": p.main_image_url,
+        "qr_code": p.qr_code,
+        "created_at": p.created_at.isoformat() if p.created_at else None,
+        "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+    }
+
+
 # ─── SCHEMAS ─────────────────────────────────────────────────
 class ProductCreate(BaseModel):
     code: str
@@ -131,7 +160,7 @@ async def create_product(payload: ProductCreate, db: AsyncSession = Depends(get_
 
     await db.commit()
     await db.refresh(product)
-    return product
+    return _product_dict(product)
 
 
 @router.get("/scan")
@@ -161,7 +190,7 @@ async def scan_product(
     total_qty = sum(s.quantity for s in stocks)
 
     return {
-        "product": product,
+        "product": _product_dict(product),
         "total_stock": float(total_qty),
     }
 
@@ -174,7 +203,10 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
         .where(Category.is_active == True)
         .order_by(Category.sort_order, Category.name)
     )
-    return result.scalars().all()
+    return [
+        {"id": str(c.id), "name": c.name, "name_en": c.name_en, "sort_order": c.sort_order}
+        for c in result.scalars().all()
+    ]
 
 
 @router.get("/{product_id}")
@@ -182,7 +214,7 @@ async def get_product(product_id: str, db: AsyncSession = Depends(get_db)):
     product = await db.get(Product, uuid.UUID(product_id))
     if not product:
         raise HTTPException(404, "Product not found")
-    return product
+    return _product_dict(product)
 
 
 @router.put("/{product_id}")
@@ -195,7 +227,8 @@ async def update_product(product_id: str, payload: ProductUpdate, db: AsyncSessi
             value = uuid.UUID(value)
         setattr(product, field, value)
     await db.commit()
-    return product
+    await db.refresh(product)
+    return _product_dict(product)
 
 
 @router.post("/{product_id}/images")
