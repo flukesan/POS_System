@@ -20,6 +20,34 @@ from app.models.models import Customer, CreditTransaction, SalesOrder, CreditSta
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
 
+def _customer_dict(c: Customer) -> dict:
+    return {
+        "id": str(c.id),
+        "code": c.code,
+        "customer_type": c.customer_type,
+        "name": c.name,
+        "phone": c.phone,
+        "email": c.email,
+        "address": c.address,
+        "district": c.district,
+        "province": c.province,
+        "postal_code": c.postal_code,
+        "tax_id": c.tax_id,
+        "farm_area_rai": float(c.farm_area_rai) if c.farm_area_rai is not None else None,
+        "crop_types": c.crop_types or [],
+        "credit_limit": float(c.credit_limit) if c.credit_limit is not None else 0,
+        "credit_balance": float(c.credit_balance) if c.credit_balance is not None else 0,
+        "credit_days": c.credit_days,
+        "credit_status": c.credit_status.value if c.credit_status else "active",
+        "loyalty_points": c.loyalty_points,
+        "total_purchases": float(c.total_purchases) if c.total_purchases is not None else 0,
+        "is_active": c.is_active,
+        "notes": c.notes,
+        "created_at": c.created_at.isoformat() if c.created_at else None,
+        "updated_at": c.updated_at.isoformat() if c.updated_at else None,
+    }
+
+
 # ─── SCHEMAS ─────────────────────────────────────────────────
 class CustomerCreate(BaseModel):
     name: str
@@ -114,7 +142,7 @@ async def create_customer(payload: CustomerCreate, db: AsyncSession = Depends(ge
     db.add(customer)
     await db.commit()
     await db.refresh(customer)
-    return customer
+    return _customer_dict(customer)
 
 
 @router.get("/{customer_id}")
@@ -122,7 +150,7 @@ async def get_customer(customer_id: str, db: AsyncSession = Depends(get_db)):
     customer = await db.get(Customer, uuid.UUID(customer_id))
     if not customer:
         raise HTTPException(404, "Customer not found")
-    return customer
+    return _customer_dict(customer)
 
 
 @router.put("/{customer_id}")
@@ -133,7 +161,8 @@ async def update_customer(customer_id: str, payload: CustomerUpdate, db: AsyncSe
     for field, value in payload.model_dump(exclude_none=True).items():
         setattr(customer, field, value)
     await db.commit()
-    return customer
+    await db.refresh(customer)
+    return _customer_dict(customer)
 
 
 @router.get("/{customer_id}/credit-summary")
