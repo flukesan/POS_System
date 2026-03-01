@@ -422,7 +422,7 @@ class POSTerminal(QWidget):
         cart_h.setContentsMargins(16, 0, 16, 0)
 
         cart_title = QLabel('🛒  ตะกร้าสินค้า')
-        cart_title.setFont(QFont('Sarabun', 13, QFont.Weight.Bold))
+        cart_title.setFont(QFont('Sarabun', 15, QFont.Weight.Bold))
         cart_title.setStyleSheet('color: #1e293b;')
         cart_h.addWidget(cart_title)
         cart_h.addStretch()
@@ -449,21 +449,30 @@ class POSTerminal(QWidget):
         totals_layout.setContentsMargins(16, 12, 16, 16)
         totals_layout.setSpacing(6)
 
-        def total_row(label, value_attr, bold=False, color='#475569'):
+        def total_row(label, value_attr, big=False, color='#475569'):
             row = QHBoxLayout()
             lbl = QLabel(label)
-            lbl.setStyleSheet(f'color: {color}; font-size: {"14" if bold else "12"}px; font-weight: {"700" if bold else "500"};')
+            lbl.setFont(QFont('Sarabun', 18 if big else 14, QFont.Weight.Bold if big else QFont.Weight.DemiBold))
+            lbl.setStyleSheet(f'color: {color};')
             row.addWidget(lbl)
             row.addStretch()
             val = QLabel('฿0.00')
-            val.setStyleSheet(f'color: {color}; font-size: {"14" if bold else "12"}px; font-weight: {"700" if bold else "500"};')
+            val.setFont(QFont('Sarabun', 20 if big else 14, QFont.Weight.Bold))
+            val.setStyleSheet(f'color: {color};')
             setattr(self, value_attr, val)
             row.addWidget(val)
             return row
 
-        totals_layout.addLayout(total_row('ยอดรวม', 'subtotal_lbl'))
-        totals_layout.addLayout(total_row('ภาษี 7%', 'tax_lbl'))
-        self.total_row = total_row('ยอดชำระ', 'total_lbl', bold=True, color='#059669')
+        totals_layout.addLayout(total_row('ยอดรวม', 'subtotal_lbl', color='#475569'))
+        totals_layout.addLayout(total_row('ภาษี 7%', 'tax_lbl', color='#64748b'))
+
+        # Divider before total
+        div = QFrame()
+        div.setFrameShape(QFrame.Shape.HLine)
+        div.setStyleSheet('color: #e2e8f0; margin: 4px 0;')
+        totals_layout.addWidget(div)
+
+        self.total_row = total_row('ยอดชำระ', 'total_lbl', big=True, color='#059669')
         totals_layout.addLayout(self.total_row)
         totals_layout.addSpacing(8)
 

@@ -39,9 +39,9 @@ class NavButton(QPushButton):
         super().__init__(parent)
         self.setObjectName('nav_btn')
         self.setCheckable(True)
-        self.setFixedHeight(46)
+        self.setFixedHeight(52)
         self.setText(f'  {icon}  {label}')
-        self.setFont(QFont('Sarabun', 12))
+        self.setFont(QFont('Sarabun', 14, QFont.Weight.DemiBold))
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
