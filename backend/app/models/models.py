@@ -5,10 +5,17 @@ from sqlalchemy import (
     Column, String, Boolean, DateTime, Numeric, Integer,
     Text, ForeignKey, Enum, Date, LargeBinary, Index
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
+from sqlalchemy.dialects.postgresql import UUID, JSONB, INET, ENUM as PGENUM
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 import enum
+
+# PostgreSQL ENUM type that already exists in the DB (created by 01_schema.sql)
+_unit_type = PGENUM(
+    'kg', 'g', 'l', 'ml', 'bag', 'box', 'piece', 'set', 'bottle', 'pack',
+    name='unit_type',
+    create_type=False,  # don't try to CREATE TYPE — it already exists
+)
 
 class UserRole(str, enum.Enum):
     admin = "admin"
@@ -111,7 +118,7 @@ class Product(Base):
     name_en = Column(String(200))
     category_id = Column(UUID(as_uuid=True), ForeignKey("categories.id"))
     supplier_id = Column(UUID(as_uuid=True), ForeignKey("suppliers.id"))
-    unit = Column(String(20), default="piece")
+    unit = Column(_unit_type, nullable=False, default="piece")
     unit_per_pack = Column(Numeric(10, 3), default=1)
     cost_price = Column(Numeric(12, 2), nullable=False, default=0)
     selling_price = Column(Numeric(12, 2), nullable=False, default=0)
