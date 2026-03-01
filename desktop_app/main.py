@@ -20,7 +20,6 @@ logging.basicConfig(
 
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtGui import QFont
-from PyQt6.QtCore import Qt
 
 from services.api_client import APIClient
 from services.printer import PrinterService
@@ -37,9 +36,6 @@ def main():
     font = QFont('Sarabun', 13)
     font.setStyleHint(QFont.StyleHint.SansSerif)
     app.setFont(font)
-
-    # High DPI
-    app.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
 
     # Init services
     api_url = os.getenv('API_URL', 'http://localhost:8000/api/v1')
