@@ -2,9 +2,11 @@
 AgriPOS System - Main Application Entry Point
 FastAPI Application for Agricultural POS System
 """
-from fastapi import FastAPI
+import traceback
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from pathlib import Path
 
 from app.core.config import settings
@@ -40,6 +42,16 @@ app.include_router(stock.router, prefix=PREFIX)
 app.include_router(sales.router, prefix=PREFIX)
 app.include_router(customers.router, prefix=PREFIX)
 app.include_router(reports.router, prefix=PREFIX)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Return real error details instead of generic 500."""
+    tb = traceback.format_exc()
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"{type(exc).__name__}: {str(exc)}", "traceback": tb},
+    )
 
 
 @app.get("/health")
