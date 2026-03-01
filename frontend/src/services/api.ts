@@ -84,6 +84,11 @@ export const customerApi = {
   creditTransactions: (id: string) => api.get(`/customers/${id}/credit-transactions`),
 };
 
+// ─── CATEGORIES ───────────────────────────────────────────────
+export const categoryApi = {
+  list: () => api.get('/products/categories'),
+};
+
 // ─── REPORTS ──────────────────────────────────────────────────
 export const reportApi = {
   dashboard: () => api.get('/reports/dashboard'),
