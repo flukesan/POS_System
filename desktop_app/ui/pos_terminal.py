@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QTableWidget, QTableWidgetItem, QHeaderView,
     QButtonGroup, QSpinBox, QDoubleSpinBox
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, pyqtSlot
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, pyqtSlot, QByteArray
 from PyQt6.QtGui import QFont, QColor, QPixmap, QIcon
 from typing import List, Dict, Optional
 from services.api_client import APIClient, APIError
@@ -66,32 +66,76 @@ class ProductSearchWorker(QThread):
             self.error.emit(str(e))
 
 
+# ── Image Loader Thread ────────────────────────────────────────
+class ImageLoader(QThread):
+    loaded = pyqtSignal(QPixmap)
+
+    def __init__(self, url: str, w: int = 60, h: int = 60):
+        super().__init__()
+        self.url = url
+        self.w = w
+        self.h = h
+
+    def run(self):
+        try:
+            import requests as _req
+            resp = _req.get(self.url, timeout=5)
+            resp.raise_for_status()
+            pixmap = QPixmap()
+            pixmap.loadFromData(QByteArray(resp.content))
+            if not pixmap.isNull():
+                pixmap = pixmap.scaled(
+                    self.w, self.h,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+                self.loaded.emit(pixmap)
+        except Exception:
+            pass
+
+
 # ── Product Card Widget ───────────────────────────────────────
 class ProductCard(QFrame):
     clicked = pyqtSignal(dict)
 
-    def __init__(self, product: dict, parent=None):
+    def __init__(self, product: dict, base_url: str = '', parent=None):
         super().__init__(parent)
         self.product = product
+        self.base_url = base_url
+        self._img_loader: Optional[ImageLoader] = None
         self.setObjectName('product_card')
-        self.setFixedSize(160, 140)
+        self.setFixedSize(160, 160)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setStyleSheet(PRODUCT_CARD_STYLE + """
             QFrame#product_card { cursor: pointer; }
         """)
         self._build()
 
+    def _resolve_url(self, url: str) -> str:
+        if not url:
+            return ''
+        if url.startswith('http://') or url.startswith('https://'):
+            return url
+        return self.base_url.rstrip('/') + '/' + url.lstrip('/')
+
     def _build(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(4)
 
-        # Icon / image placeholder
-        icon = QLabel('📦')
-        icon.setFont(QFont('', 28))
-        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon.setFixedHeight(40)
-        layout.addWidget(icon)
+        # Image area
+        self.img_lbl = QLabel('📦')
+        self.img_lbl.setFont(QFont('', 28))
+        self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.img_lbl.setFixedSize(140, 60)
+        self.img_lbl.setStyleSheet('background: #f1f5f9; border-radius: 6px;')
+        layout.addWidget(self.img_lbl)
+
+        img_url = self._resolve_url(self.product.get('main_image_url') or '')
+        if img_url:
+            self._img_loader = ImageLoader(img_url, 140, 60)
+            self._img_loader.loaded.connect(self._on_image_loaded)
+            self._img_loader.start()
 
         # Name
         name = QLabel(self.product.get('name', ''))
@@ -110,6 +154,10 @@ class ProductCard(QFrame):
         price_label.setStyleSheet('color: #10b981;')
         price_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(price_label)
+
+    def _on_image_loaded(self, pixmap: QPixmap):
+        self.img_lbl.setPixmap(pixmap)
+        self.img_lbl.setText('')
 
     def mousePressEvent(self, event):
         self.clicked.emit(self.product)
@@ -151,23 +199,46 @@ class CartTable(QTableWidget):
             QTableWidget { alternate-background-color: #f8fafc; }
         """)
 
-    def load_items(self, items: List[CartItem]):
+    def load_items(self, items: List[CartItem], base_url: str = ''):
+        self._img_loaders: list = getattr(self, '_img_loaders', [])
+        self._img_loaders.clear()
         self.setRowCount(len(items))
         for row, item in enumerate(items):
-            self.setRowHeight(row, 52)
+            self.setRowHeight(row, 56)
 
-            # Name + code
+            # Name + code (with thumbnail)
             name_widget = QWidget()
-            name_layout = QVBoxLayout(name_widget)
-            name_layout.setContentsMargins(4, 4, 4, 4)
-            name_layout.setSpacing(1)
+            name_h = QHBoxLayout(name_widget)
+            name_h.setContentsMargins(4, 4, 4, 4)
+            name_h.setSpacing(6)
+
+            # Thumbnail
+            img_lbl = QLabel('📦')
+            img_lbl.setFixedSize(44, 44)
+            img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            img_lbl.setStyleSheet('background: #f1f5f9; border-radius: 6px; font-size: 20px;')
+            name_h.addWidget(img_lbl)
+
+            raw_url = item.product.get('main_image_url') or ''
+            if raw_url and base_url:
+                img_url = raw_url if raw_url.startswith('http') else base_url.rstrip('/') + '/' + raw_url.lstrip('/')
+                loader = ImageLoader(img_url, 44, 44)
+                loader.loaded.connect(lambda px, lbl=img_lbl: (lbl.setPixmap(px), lbl.setText('')))
+                loader.start()
+                self._img_loaders.append(loader)
+
+            text_col = QWidget()
+            text_layout = QVBoxLayout(text_col)
+            text_layout.setContentsMargins(0, 0, 0, 0)
+            text_layout.setSpacing(1)
             name_lbl = QLabel(item.product.get('name', ''))
             name_lbl.setFont(QFont('Sarabun', 12, QFont.Weight.DemiBold))
             name_lbl.setStyleSheet('color: #1e293b;')
             code_lbl = QLabel(item.product.get('code', ''))
             code_lbl.setStyleSheet('color: #94a3b8; font-size: 10px; font-family: monospace;')
-            name_layout.addWidget(name_lbl)
-            name_layout.addWidget(code_lbl)
+            text_layout.addWidget(name_lbl)
+            text_layout.addWidget(code_lbl)
+            name_h.addWidget(text_col)
             self.setCellWidget(row, 0, name_widget)
 
             # Price
@@ -285,8 +356,6 @@ class PaymentDialog(QDialog):
         self.change_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.change_label)
 
-        self._update_change()
-
         # Confirm button
         self.confirm_btn = QPushButton('✓  ยืนยันชำระเงิน + เปิดลิ้นชัก')
         self.confirm_btn.setFixedHeight(56)
@@ -294,6 +363,8 @@ class PaymentDialog(QDialog):
         self.confirm_btn.setStyleSheet(CHECKOUT_BTN_STYLE)
         self.confirm_btn.clicked.connect(self._confirm)
         layout.addWidget(self.confirm_btn)
+
+        self._update_change()
 
         cancel_btn = QPushButton('ยกเลิก')
         cancel_btn.setFixedHeight(40)
@@ -517,7 +588,7 @@ class POSTerminal(QWidget):
         self.status_label.hide()
         cols = 4
         for i, product in enumerate(products):
-            card = ProductCard(product)
+            card = ProductCard(product, base_url=self.api.base_url)
             card.clicked.connect(self._add_to_cart)
             self.grid_layout.addWidget(card, i // cols, i % cols)
 
@@ -561,7 +632,7 @@ class POSTerminal(QWidget):
             self._refresh_cart()
 
     def _refresh_cart(self):
-        self.cart_table.load_items(self.cart)
+        self.cart_table.load_items(self.cart, base_url=self.api.base_url)
         subtotal = sum(i.subtotal for i in self.cart)
         tax = sum(i.tax_amount for i in self.cart)
         total = sum(i.total for i in self.cart)
