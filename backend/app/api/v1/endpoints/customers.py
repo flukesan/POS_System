@@ -38,7 +38,7 @@ def _customer_dict(c: Customer) -> dict:
         "credit_limit": float(c.credit_limit) if c.credit_limit is not None else 0,
         "credit_balance": float(c.credit_balance) if c.credit_balance is not None else 0,
         "credit_days": c.credit_days,
-        "credit_status": c.credit_status.value if c.credit_status else "active",
+        "credit_status": c.credit_status if c.credit_status else "active",
         "loyalty_points": c.loyalty_points,
         "total_purchases": float(c.total_purchases) if c.total_purchases is not None else 0,
         "is_active": c.is_active,

@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import (
     QMessageBox, QFrame, QComboBox
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtGui import QFont, QColor, QRegularExpressionValidator
+from PyQt6.QtCore import QRegularExpression
 from services.api_client import APIClient, APIError
 from ui.styles import INPUT_STYLE, BUTTON_PRIMARY, BUTTON_SECONDARY, TABLE_STYLE, CARD_STYLE
 
@@ -71,7 +72,8 @@ class CustomerFormDialog(QDialog):
         self.name_inp = inp('ชื่อ-นามสกุล / ชื่อบริษัท', self.customer.get('name','') if self.customer else '')
         form.addRow(lbl('ชื่อลูกค้า *'), self.name_inp)
 
-        self.phone_inp = inp('08x-xxxxxxx', self.customer.get('phone','') if self.customer else '')
+        self.phone_inp = inp('08xxxxxxxx', self.customer.get('phone','') if self.customer else '')
+        self.phone_inp.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d{0,15}$')))
         form.addRow(lbl('เบอร์โทรศัพท์'), self.phone_inp)
 
         self.type_combo = QComboBox()
