@@ -13,46 +13,47 @@ SIDEBAR_STYLE = """
         color: #94a3b8;
         border: none;
         border-radius: 12px;
-        padding: 10px 12px;
+        padding: 12px 14px;
         text-align: left;
-        font-size: 13px;
-        font-weight: 500;
+        font-size: 15px;
+        font-weight: 600;
     }
     QPushButton#nav_btn:hover {
-        background: rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.08);
         color: #ffffff;
     }
     QPushButton#nav_btn:checked {
-        background: rgba(255,255,255,0.10);
-        color: #ffffff;
-        border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(16,185,129,0.20);
+        color: #6ee7b7;
+        border: 1px solid rgba(16,185,129,0.30);
+        font-weight: 700;
     }
     QLabel#logo_title {
         color: #ffffff;
-        font-size: 16px;
+        font-size: 18px;
         font-weight: 700;
     }
     QLabel#logo_sub {
-        color: #64748b;
-        font-size: 11px;
+        color: #94a3b8;
+        font-size: 12px;
     }
     QLabel#user_name {
         color: #ffffff;
-        font-size: 13px;
-        font-weight: 600;
+        font-size: 14px;
+        font-weight: 700;
     }
     QLabel#user_role {
-        color: #64748b;
-        font-size: 11px;
+        color: #94a3b8;
+        font-size: 12px;
     }
     QPushButton#logout_btn {
         background: transparent;
-        color: #64748b;
+        color: #94a3b8;
         border: none;
         border-radius: 8px;
         padding: 8px 12px;
         text-align: left;
-        font-size: 12px;
+        font-size: 13px;
     }
     QPushButton#logout_btn:hover {
         background: rgba(239,68,68,0.10);
@@ -85,11 +86,11 @@ TABLE_STYLE = """
         gridline-color: #f1f5f9;
         selection-background-color: #eff6ff;
         selection-color: #1e40af;
-        font-size: 13px;
+        font-size: 14px;
         outline: none;
     }
     QTableWidget::item {
-        padding: 10px 12px;
+        padding: 10px 14px;
         border-bottom: 1px solid #f1f5f9;
         color: #334155;
     }
@@ -100,7 +101,7 @@ TABLE_STYLE = """
     QHeaderView::section {
         background: #f8fafc;
         color: #64748b;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 700;
         padding: 10px 12px;
         border: none;
@@ -128,7 +129,7 @@ INPUT_STYLE = """
         border: 1.5px solid #e2e8f0;
         border-radius: 10px;
         padding: 8px 12px;
-        font-size: 13px;
+        font-size: 14px;
         color: #1e293b;
         selection-background-color: #d1fae5;
     }

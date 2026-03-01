@@ -43,6 +43,7 @@ class ProductCreate(BaseModel):
     reorder_point: int = 10
     chemical_registration: Optional[str] = None
     expiry_tracking: bool = False
+    is_active: bool = True
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
@@ -113,6 +114,7 @@ async def create_product(payload: ProductCreate, db: AsyncSession = Depends(get_
         reorder_point=payload.reorder_point,
         chemical_registration=payload.chemical_registration,
         expiry_tracking=payload.expiry_tracking,
+        is_active=payload.is_active,
     )
     db.add(product)
     await db.flush()
@@ -162,6 +164,17 @@ async def scan_product(
         "product": product,
         "total_stock": float(total_qty),
     }
+
+
+@router.get("/categories")
+async def list_categories(db: AsyncSession = Depends(get_db)):
+    """List all active product categories."""
+    result = await db.execute(
+        select(Category)
+        .where(Category.is_active == True)
+        .order_by(Category.sort_order, Category.name)
+    )
+    return result.scalars().all()
 
 
 @router.get("/{product_id}")
