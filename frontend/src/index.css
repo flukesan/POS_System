@@ -7,7 +7,62 @@
     font-family: 'Sarabun', 'Noto Sans Thai', system-ui, sans-serif;
   }
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 99px;
+  }
+}
+
+@layer components {
+  .input-field {
+    @apply w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all;
+  }
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 px-4 py-2.5 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50;
+    background: linear-gradient(135deg, #10b981, #0d9488);
+  }
+  .btn-secondary {
+    @apply flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all;
+  }
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-slate-100;
+  }
+  .badge-green {
+    @apply px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700;
+  }
+  .badge-red {
+    @apply px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700;
+  }
+  .badge-amber {
+    @apply px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700;
+  }
+  .badge-gray {
+    @apply px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500;
+  }
+  .page-header {
+    @apply text-2xl font-bold text-slate-800;
+  }
+  .page-subheader {
+    @apply text-sm text-slate-500 mt-0.5;
+  }
+  .table-th {
+    @apply px-4 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider;
+  }
+  .table-td {
+    @apply px-4 py-3;
   }
 }
 
