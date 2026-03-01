@@ -30,13 +30,14 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     user.last_login = datetime.utcnow()
     await db.commit()
 
-    token = create_access_token({"sub": str(user.id), "role": user.role.value})
+    role = user.role if isinstance(user.role, str) else user.role.value
+    token = create_access_token({"sub": str(user.id), "role": role})
     return TokenResponse(
         access_token=token,
         user_id=str(user.id),
         username=user.username,
         full_name=user.full_name,
-        role=user.role.value,
+        role=role,
     )
 
 class ChangePasswordRequest(BaseModel):
